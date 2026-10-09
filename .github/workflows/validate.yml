@@ -1,0 +1,19 @@
+name: Validate Project Evil
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1
+      - name: Check Lua syntax
+        run: find 42/media/lua -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: Check campaign structure
+        run: python3 -m unittest discover -s tests -v
