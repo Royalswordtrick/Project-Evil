@@ -2,7 +2,7 @@ ProjectEvil = ProjectEvil or {}
 ProjectEvil.Campaign = ProjectEvil.Campaign or {}
 
 local Campaign = ProjectEvil.Campaign
-Campaign.VERSION = 1
+Campaign.VERSION = 2
 Campaign.MISSION_ID = "village_opening"
 
 local function playerData(player)
@@ -12,7 +12,7 @@ local function playerData(player)
         version = Campaign.VERSION,
         missionId = Campaign.MISSION_ID,
         stage = 1,
-        elapsedTicks = 0,
+        openingStartWorldAgeHours = nil,
         nearbyKills = 0,
         foundSupplies = false,
         completed = false
@@ -21,8 +21,17 @@ local function playerData(player)
     d.version = Campaign.VERSION
     d.missionId = d.missionId or Campaign.MISSION_ID
     d.stage = d.stage or 1
-    d.elapsedTicks = d.elapsedTicks or 0
     d.nearbyKills = d.nearbyKills or 0
+    d.foundSupplies = d.foundSupplies or false
+    d.completed = d.completed or false
+
+    -- Persist an in-game-time anchor so progression is not tied to frame rate.
+    if d.openingStartWorldAgeHours == nil then
+        local gameTime = getGameTime()
+        if gameTime then
+            d.openingStartWorldAgeHours = gameTime:getWorldAgeHours()
+        end
+    end
     return d
 end
 
@@ -35,8 +44,8 @@ function Campaign.getObjective(player)
     if not d then return "Waiting for Leon..." end
     if d.completed then return "Village secured. Next objective unlocked." end
     if d.stage == 1 then return "Investigate the village and survive the first attack." end
-    if d.stage == 2 then return "Scavenge supplies: carry food, medical supplies, and ammunition." end
-    if d.stage == 3 then return "Hold your ground: survive and eliminate nearby threats." end
+    if d.stage == 2 then return "Scavenge food plus medical supplies or ammunition." end
+    if d.stage == 3 then return "Hold your ground: clear 5 nearby threats." end
     return "Reach the next objective."
 end
 
@@ -69,11 +78,12 @@ function Campaign.onPlayerUpdate(player)
     local d = playerData(player)
     if not d or d.completed then return end
 
-    d.elapsedTicks = d.elapsedTicks + 1
-
-    -- A short, deterministic opening beat before the supply objective.
-    if d.stage == 1 and d.elapsedTicks >= 60 * 60 * 5 then
-        d.stage = 2
+    -- The opening beat lasts five in-game hours, independent of FPS.
+    if d.stage == 1 and d.openingStartWorldAgeHours ~= nil then
+        local gameTime = getGameTime()
+        if gameTime and (gameTime:getWorldAgeHours() - d.openingStartWorldAgeHours) >= 5 then
+            d.stage = 2
+        end
     end
 
     if d.stage == 2 and hasScavengedSupplies(player) then
