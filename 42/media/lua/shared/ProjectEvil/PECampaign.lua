@@ -2,8 +2,8 @@ ProjectEvil = ProjectEvil or {}
 ProjectEvil.Campaign = ProjectEvil.Campaign or {}
 
 local Campaign = ProjectEvil.Campaign
-Campaign.VERSION = 2
-Campaign.MISSION_ID = "village_opening"
+Campaign.VERSION = 3
+Campaign.MISSION_ID = "missing_village"
 
 local function playerData(player)
     if not player then return nil end
@@ -42,11 +42,11 @@ end
 function Campaign.getObjective(player)
     local d = playerData(player)
     if not d then return "Waiting for Leon..." end
-    if d.completed then return "Village secured. Next objective unlocked." end
-    if d.stage == 1 then return "Investigate the village and survive the first attack." end
-    if d.stage == 2 then return "Scavenge food plus medical supplies or ammunition." end
-    if d.stage == 3 then return "Hold your ground: clear 5 nearby threats." end
-    return "Reach the next objective."
+    if d.completed then return "Missing Village: survive the night. Chapter one complete." end
+    if d.stage == 1 then return "The Missing Village: search for signs of the vanished residents." end
+    if d.stage == 2 then return "Prepare for nightfall: find food and medical supplies or ammunition." end
+    if d.stage == 3 then return "The villagers are back: survive and clear 5 nearby infected." end
+    return "Investigate the source of the parasite outbreak."
 end
 
 local function hasAny(player, types)
@@ -78,7 +78,7 @@ function Campaign.onPlayerUpdate(player)
     local d = playerData(player)
     if not d or d.completed then return end
 
-    -- The opening beat lasts five in-game hours, independent of FPS.
+    -- The investigation lasts five in-game hours, independent of FPS.
     if d.stage == 1 and d.openingStartWorldAgeHours ~= nil then
         local gameTime = getGameTime()
         if gameTime and (gameTime:getWorldAgeHours() - d.openingStartWorldAgeHours) >= 5 then
