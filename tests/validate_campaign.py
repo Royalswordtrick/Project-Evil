@@ -24,7 +24,7 @@ class CampaignStructureTests(unittest.TestCase):
         self.assertIn("d.completed", self.campaign)
 
     def test_opening_objectives_and_completion_are_defined(self):
-        for phrase in ("Investigate the village", "Scavenge food", "Hold your ground"):
+        for phrase in ("The Missing Village", "Prepare for nightfall", "The villagers are back"):
             self.assertIn(phrase, self.campaign)
         self.assertIn("d.nearbyKills >= 5", self.campaign)
 
